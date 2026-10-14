@@ -1,0 +1,30 @@
+{
+  "version": 2,
+  "dgSpecHash": "8c5AU1WneWI=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\jungo\\Desktop\\C#기말\\26031008_Dongwoo_GameCraft\\src\\26031008_Dongwoo_XXXX\\26031008_Dongwoo_XXXX.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\jungo\\.nuget\\packages\\glc2dcsharp\\0.1.0.8\\glc2dcsharp.0.1.0.8.nupkg.sha512",
+    "C:\\Users\\jungo\\.nuget\\packages\\naudio\\3.1.0\\naudio.3.1.0.nupkg.sha512",
+    "C:\\Users\\jungo\\.nuget\\packages\\naudio.asio\\3.1.0\\naudio.asio.3.1.0.nupkg.sha512",
+    "C:\\Users\\jungo\\.nuget\\packages\\naudio.core\\3.1.0\\naudio.core.3.1.0.nupkg.sha512",
+    "C:\\Users\\jungo\\.nuget\\packages\\naudio.dmo\\3.1.0\\naudio.dmo.3.1.0.nupkg.sha512",
+    "C:\\Users\\jungo\\.nuget\\packages\\naudio.midi\\3.1.0\\naudio.midi.3.1.0.nupkg.sha512",
+    "C:\\Users\\jungo\\.nuget\\packages\\naudio.wasapi\\3.1.0\\naudio.wasapi.3.1.0.nupkg.sha512",
+    "C:\\Users\\jungo\\.nuget\\packages\\naudio.winforms\\3.1.0\\naudio.winforms.3.1.0.nupkg.sha512",
+    "C:\\Users\\jungo\\.nuget\\packages\\naudio.winmm\\3.1.0\\naudio.winmm.3.1.0.nupkg.sha512",
+    "C:\\Users\\jungo\\.nuget\\packages\\sharpgen.runtime\\2.4.2-beta\\sharpgen.runtime.2.4.2-beta.nupkg.sha512",
+    "C:\\Users\\jungo\\.nuget\\packages\\sharpgen.runtime.com\\2.4.2-beta\\sharpgen.runtime.com.2.4.2-beta.nupkg.sha512",
+    "C:\\Users\\jungo\\.nuget\\packages\\system.numerics.tensors\\9.0.0\\system.numerics.tensors.9.0.0.nupkg.sha512",
+    "C:\\Users\\jungo\\.nuget\\packages\\system.text.json\\9.0.1\\system.text.json.9.0.1.nupkg.sha512",
+    "C:\\Users\\jungo\\.nuget\\packages\\vortice.direct2d1\\3.8.3\\vortice.direct2d1.3.8.3.nupkg.sha512",
+    "C:\\Users\\jungo\\.nuget\\packages\\vortice.direct3d11\\3.8.3\\vortice.direct3d11.3.8.3.nupkg.sha512",
+    "C:\\Users\\jungo\\.nuget\\packages\\vortice.directx\\3.8.3\\vortice.directx.3.8.3.nupkg.sha512",
+    "C:\\Users\\jungo\\.nuget\\packages\\vortice.dxgi\\3.8.3\\vortice.dxgi.3.8.3.nupkg.sha512",
+    "C:\\Users\\jungo\\.nuget\\packages\\vortice.mathematics\\2.1.0\\vortice.mathematics.2.1.0.nupkg.sha512",
+    "C:\\Users\\jungo\\.nuget\\packages\\vortice.winforms\\3.8.3\\vortice.winforms.3.8.3.nupkg.sha512",
+    "C:\\Users\\jungo\\.nuget\\packages\\vortice.xaudio2\\3.8.3\\vortice.xaudio2.3.8.3.nupkg.sha512",
+    "C:\\Users\\jungo\\.nuget\\packages\\vortice.xinput\\3.8.3\\vortice.xinput.3.8.3.nupkg.sha512"
+  ],
+  "logs": []
+}
