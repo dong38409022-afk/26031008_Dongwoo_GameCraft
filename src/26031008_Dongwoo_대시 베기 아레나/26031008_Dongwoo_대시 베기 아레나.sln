@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.37614.0 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "26031008_Dongwoo_대시 베기 아레나", "26031008_Dongwoo_대시 베기 아레나.csproj", "{B319BC8A-AFD8-44EC-AFAB-EF9C570D69AA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B319BC8A-AFD8-44EC-AFAB-EF9C570D69AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B319BC8A-AFD8-44EC-AFAB-EF9C570D69AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B319BC8A-AFD8-44EC-AFAB-EF9C570D69AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B319BC8A-AFD8-44EC-AFAB-EF9C570D69AA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7C681707-1059-42F4-94A3-FA6A20F19FAF}
+	EndGlobalSection
+EndGlobal
