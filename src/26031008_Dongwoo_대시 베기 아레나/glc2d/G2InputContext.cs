@@ -1,4 +1,4 @@
-﻿// -------------------------------------------------------------------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Author: 3dapi (https://github.com/3dapi)
 // -------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -24,6 +24,7 @@ class G2InputContext : IDisposable
 	private const int MaxInputKey = 256;
 	private const int MaxInputButton = 8;
 
+	private readonly bool[] _pendingDown = new bool[256];
 	private readonly byte[] _keyCur = new byte[MaxInputKey];
 	private readonly byte[] _keyOld = new byte[MaxInputKey];
 	private readonly InputState[] _keyMap = new InputState[MaxInputKey];
@@ -63,6 +64,8 @@ class G2InputContext : IDisposable
 		}
 		_targetForm = form ?? throw new ArgumentNullException(nameof(form));
 		_targetForm.MouseWheel += OnMouseWheel;
+		_targetForm.KeyDown += OnKeyDown;
+		_targetForm.MouseDown += OnMouseDown;
 		_mouseOldPosition = _mousePosition;
 		Instance = this;
 	}
@@ -84,7 +87,8 @@ class G2InputContext : IDisposable
 			for (int i = 0; i < MaxInputKey; i++)
 			{
 				_keyCur[i] = (_keyCur[i] & 0x80) != 0 ? (byte)1 : (byte)0;
-				_keyMap[i] = GetInputState(_keyOld[i], _keyCur[i]);
+				if (_pendingDown[i]) { _keyCur[i] = 1; _pendingDown[i] = false; }
+					_keyMap[i] = GetInputState(_keyOld[i], _keyCur[i]);
 			}
 		}
 		else
@@ -143,6 +147,9 @@ class G2InputContext : IDisposable
 		}
 		return InputState.None;
 	}
+
+	private void OnKeyDown(object? sender, KeyEventArgs e) => _pendingDown[(int)e.KeyCode] = true;
+	private void OnMouseDown(object? sender, MouseEventArgs e) { if (e.Button == MouseButtons.Left) _pendingDown[(int)Keys.LButton] = true; }
 
 	private void OnMouseWheel(object? sender, MouseEventArgs e)
 	{
@@ -225,6 +232,9 @@ class G2InputContext : IDisposable
 	public void Dispose()
 	{
 		_targetForm.MouseWheel -= OnMouseWheel;
+		_targetForm.KeyDown -= OnKeyDown;
+		_targetForm.MouseDown -= OnMouseDown;
 		Instance = null;
 	}
 }
+
