@@ -19,6 +19,27 @@ class GameMain : G2AppBase
     G2Texture playerImage = null!;
     G2Texture heartImage = null!;
     G2Texture trailImage = null!;
+    G2Texture enemyImage = null!;
+    G2Texture warningImage = null!;
+
+    // 적 하나마다 위치와 등장 전 대기시간을 저장합니다.
+    class Enemy
+    {
+        public Vector2 Position;
+        public float WarningTime = 0.5f;
+    }
+    List<Enemy> enemies = new List<Enemy>();
+    // 처치 효과는 9장의 이미지를 순서대로 보여 줍니다.
+    class KillEffect
+    {
+        public Vector2 Position;
+        public float Time;
+    }
+    List<KillEffect> killEffects = new List<KillEffect>();
+    G2Texture[] killImages = new G2Texture[9];
+    Random random = new Random();
+    float spawnTime = 0;
+    float playTime = 0;
 
     G2Font smallFont = null!;
     G2Font normalFont = null!;
@@ -42,12 +63,17 @@ class GameMain : G2AppBase
     {
         ClearColor = new Color4(0.035f, 0.055f, 0.075f, 1);
         brush = RenderTarget.CreateSolidColorBrush(white);
-        startImage = LoadImage("start_screen.png");
-        endImage = LoadImage("end_screen.png");
-        arenaImage = LoadImage("arena.png");
-        playerImage = LoadImage("player.png");
-        heartImage = LoadImage("heart.png");
-        trailImage = LoadImage("dash_trail.png");
+        startImage = LoadImage("screens/start_screen.png");
+        endImage = LoadImage("screens/end_screen.png");
+        arenaImage = LoadImage("backgrounds/arena.png");
+        playerImage = LoadImage("characters/player.png");
+        heartImage = LoadImage("ui/heart.png");
+        trailImage = LoadImage("effects/dash_trail.png");
+        enemyImage = LoadImage("characters/enemy.png");
+        warningImage = LoadImage("effects/spawn_warning.png");
+
+        for (int i = 0; i < killImages.Length; i++)
+            killImages[i] = LoadImage("effects/kill/kill_" + i.ToString("00") + ".png");
 
         smallFont = new G2Font("Malgun Gothic", 12);
         normalFont = new G2Font("Malgun Gothic", 14);
@@ -57,8 +83,17 @@ class GameMain : G2AppBase
 
     G2Texture LoadImage(string fileName)
     {
-        string path = Path.Combine(AppContext.BaseDirectory, "resource", fileName);
-        return new G2Texture(path);
+        DirectoryInfo? folder = new DirectoryInfo(AppContext.BaseDirectory);
+        // 실행 폴더에 없다면 프로젝트 상위의 원본 resource 폴더를 찾습니다.
+        while (folder != null)
+        {
+            string path = Path.Combine(folder.FullName, "resource", fileName);
+            if (File.Exists(path))
+                return new G2Texture(path);
+            folder = folder.Parent;
+        }
+        throw new FileNotFoundException("이미지가 없습니다: resource/" + fileName
+            + "\n프로젝트 전체 폴더를 복사한 뒤 다시 빌드해 주세요.");
     }
 
     // 처음 누른 순간과 계속 누르고 있는 상태를 모두 확인합니다.
@@ -80,6 +115,10 @@ class GameMain : G2AppBase
         direction = new Vector2(1, 0);
         dashTime = 0;
         waitTime = 0;
+        enemies.Clear();
+        killEffects.Clear();
+        spawnTime = 0;
+        playTime = 0;
     }
 
     void ReturnToStart()
@@ -201,6 +240,11 @@ class GameMain : G2AppBase
         if (Input.IsKeyDown(Keys.Space) && dashTime <= 0 && waitTime <= 0)
             dashTime = 0.15f;
 
+        // 이동 전 위치도 저장하여 빠르게 통과한 적을 놓치지 않습니다.
+        Vector2 previousPosition = playerPosition;
+        bool attacking = dashTime > 0;
+        UpdateKillEffects(seconds);
+
         if (dashTime > 0)
         {
             // 대시는 일반 이동 속도 240의 4배입니다.
@@ -226,8 +270,119 @@ class GameMain : G2AppBase
         if (playerPosition.X > 910) playerPosition.X = 910;
         if (playerPosition.Y < 112) playerPosition.Y = 112;
         if (playerPosition.Y > 530) playerPosition.Y = 530;
+        if (attacking)
+            KillEnemies(previousPosition, playerPosition);
+        UpdateEnemies(seconds);
     }
 
+    void KillEnemies(Vector2 start, Vector2 end)
+    {
+        // 뒤에서부터 삭제해야 아직 확인하지 않은 적의 번호가 바뀌지 않습니다.
+        for (int i = enemies.Count - 1; i >= 0; i--)
+        {
+            Enemy enemy = enemies[i];
+            if (enemy.WarningTime > 0)
+                continue;
+            if (!DashCollision.Hits(start, end, enemy.Position))
+                continue;
+
+            KillEffect effect = new KillEffect();
+            effect.Position = enemy.Position;
+            killEffects.Add(effect);
+            enemies.RemoveAt(i);
+        }
+    }
+
+    void UpdateKillEffects(float seconds)
+    {
+        for (int i = killEffects.Count - 1; i >= 0; i--)
+        {
+            killEffects[i].Time += seconds;
+            if (killEffects[i].Time >= 0.36f)
+                killEffects.RemoveAt(i);
+        }
+    }
+
+    void DrawKillEffects()
+    {
+        foreach (KillEffect effect in killEffects)
+        {
+            int frame = (int)(effect.Time / 0.04f);
+            if (frame >= killImages.Length)
+                frame = killImages.Length - 1;
+            killImages[frame].Draw(
+                new Rect(effect.Position.X - 48, effect.Position.Y - 48, 96, 96),
+                new Rect(0, 0, 128, 128));
+        }
+    }
+
+    void UpdateEnemies(float seconds)
+    {
+        playTime += seconds;
+        spawnTime += seconds;
+        float interval = 1;
+        if (playTime >= 40)
+            interval = 0.4f;
+        else if (playTime >= 20)
+            interval = 0.7f;
+
+        // 경고 중인 적도 포함하여 최대 40마리까지만 만듭니다.
+        if (spawnTime >= interval)
+        {
+            spawnTime = 0;
+            if (enemies.Count < 40)
+                SpawnEnemy();
+        }
+
+        foreach (Enemy enemy in enemies)
+        {
+            if (enemy.WarningTime > 0)
+            {
+                enemy.WarningTime -= seconds;
+                continue;
+            }
+
+            // 플레이어보다 느린 속도(90)로 따라옵니다.
+            Vector2 distance = playerPosition - enemy.Position;
+            float length = distance.Length();
+            if (length > 1)
+                enemy.Position += distance / length * Math.Min(90 * seconds, length);
+        }
+    }
+
+    void SpawnEnemy()
+    {
+        // 플레이어와 가까운 자리는 피하고 경기장 안쪽 가장자리를 고릅니다.
+        for (int attempt = 0; attempt < 20; attempt++)
+        {
+            Vector2 position = new Vector2(random.Next(50, 911), random.Next(112, 531));
+            int edge = random.Next(4);
+            if (edge == 0) position.X = 50;
+            else if (edge == 1) position.X = 910;
+            else if (edge == 2) position.Y = 112;
+            else position.Y = 530;
+
+            if (Vector2.Distance(position, playerPosition) < 180)
+                continue;
+
+            Enemy enemy = new Enemy();
+            enemy.Position = position;
+            enemies.Add(enemy);
+            return;
+        }
+    }
+
+    void DrawEnemies()
+    {
+        foreach (Enemy enemy in enemies)
+        {
+            Rect area = new Rect(enemy.Position.X - 24, enemy.Position.Y - 24, 48, 48);
+            if (enemy.WarningTime > 0)
+                warningImage.Draw(area, new Rect(0, 0, 64, 64));
+            else
+                enemyImage.Draw(area, new Rect(0, 0, 64, 64));
+        }
+    }
     protected override void Render()
     {
         if (currentScreen == Screen.Start)
@@ -268,15 +423,17 @@ class GameMain : G2AppBase
     void DrawPractice()
     {
         arenaImage.Draw(new Rect(0, 0, 960, 640), new Rect(0, 0, 960, 540), 0.4f);
-        Write("조작 연습", titleFont, 32, 24, 300, white);
+        Write("대시 처치 연습", titleFont, 32, 24, 300, white);
         Write("ESC  플레이 종료", normalFont, 704, 32, 235, gray);
-        Write("전투 연결 전 준비 화면", normalFont, 360, 69, 300, gray);
+        Write("적 " + enemies.Count + " / 40  (경고 포함)", normalFont, 360, 69, 300, gray);
         for (int i = 0; i < 3; i++)
             heartImage.Draw(new Rect(34 + i * 34, 72, 26, 26), new Rect(0, 0, 32, 32));
 
         if (dashTime > 0)
             trailImage.Draw(new Rect(playerPosition.X - 90, playerPosition.Y - 28, 100, 56),
                 new Rect(0, 0, 128, 64), 0.7f);
+        DrawEnemies();
+        DrawKillEffects();
         DrawPlayer();
 
         FillBox(new RectangleF(300, 567, 360, 8), gray);
@@ -343,6 +500,10 @@ class GameMain : G2AppBase
         playerImage?.Dispose();
         heartImage?.Dispose();
         trailImage?.Dispose();
+        enemyImage?.Dispose();
+        warningImage?.Dispose();
+        foreach (G2Texture image in killImages)
+            image?.Dispose();
         smallFont?.Dispose();
         normalFont?.Dispose();
         buttonFont?.Dispose();
@@ -351,3 +512,7 @@ class GameMain : G2AppBase
         base.Dispose();
     }
 }
+
+
+
+
